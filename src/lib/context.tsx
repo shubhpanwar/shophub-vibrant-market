@@ -1,6 +1,7 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, users, CartItem, Product, STORAGE_KEYS } from './data';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -8,6 +9,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   register: (name: string, email: string, password: string) => Promise<boolean>;
+  requestPasswordReset: (email: string) => Promise<boolean>;
+  resetPassword: (email: string, newPassword: string, token: string) => Promise<boolean>;
 }
 
 interface CartContextType {
@@ -34,6 +37,8 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => false,
   logout: () => {},
   register: async () => false,
+  requestPasswordReset: async () => false,
+  resetPassword: async () => false,
 });
 
 const CartContext = createContext<CartContextType>({
@@ -159,6 +164,46 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // Password reset functions
+  const requestPasswordReset = async (email: string) => {
+    // Simulate API call to send a password reset email
+    return new Promise<boolean>((resolve) => {
+      setTimeout(() => {
+        const user = users.find(u => u.email === email);
+        // We'll always return true for security reasons, even if user doesn't exist
+        // In a real application, an email would only be sent if the user exists
+        console.log(`Password reset requested for ${email}`, user ? 'User exists' : 'User not found');
+        resolve(true);
+      }, 1000);
+    });
+  };
+
+  const resetPassword = async (email: string, newPassword: string, token: string) => {
+    // Simulate API call to reset the password
+    return new Promise<boolean>((resolve) => {
+      setTimeout(() => {
+        // In a real app, verify token first
+        const userIndex = users.findIndex(u => u.email === email);
+        if (userIndex !== -1) {
+          // Update the user's password
+          users[userIndex].password = newPassword;
+          toast({
+            title: "Password Reset Successful",
+            description: "Your password has been updated. You can now log in with your new password.",
+          });
+          resolve(true);
+        } else {
+          toast({
+            title: "Password Reset Failed",
+            description: "Invalid email or reset token",
+            variant: "destructive",
+          });
+          resolve(false);
+        }
+      }, 1000);
+    });
+  };
+
   // Cart functions
   const addToCart = (product: Product, quantity: number = 1) => {
     setCart(prevCart => {
@@ -263,6 +308,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     login,
     logout,
     register,
+    requestPasswordReset,
+    resetPassword,
   };
 
   // Cart context value
