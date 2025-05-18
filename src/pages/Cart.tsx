@@ -172,10 +172,12 @@ const Cart = () => {
               </div>
             </div>
             
-            <Button className="w-full bg-brand-orange hover:bg-orange-600 flex items-center justify-center">
-              Proceed to Checkout
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
+            <Link to="/checkout">
+              <Button className="w-full bg-brand-orange hover:bg-orange-600 flex items-center justify-center">
+                Proceed to Checkout
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </Link>
             
             {/* Payment Methods */}
             <div className="mt-6">
