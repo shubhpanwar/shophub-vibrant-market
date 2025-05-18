@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Search, Menu, X, ShoppingCart, User, Heart, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth, useCart } from '@/lib/context';
+import { useAuth, useCart, useWishlist } from '@/lib/context';
 import CartIcon from './CartIcon';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isLoggedIn, currentUser, logout } = useAuth();
   const { cartCount } = useCart();
+  const { wishlistCount } = useWishlist();
 
   return (
     <nav className="bg-brand-blue text-white sticky top-0 z-50 shadow-md">
@@ -67,10 +68,15 @@ const Navbar = () => {
                 </Button>
               </Link>
             )}
-            <Link to="/wishlist">
+            <Link to="/wishlist" className="relative">
               <Button variant="ghost" className="text-white flex items-center hover:bg-blue-700">
                 <Heart className="h-5 w-5" />
                 <span className="hidden lg:inline ml-1">Wishlist</span>
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-brand-orange text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {wishlistCount}
+                  </span>
+                )}
               </Button>
             </Link>
             <Link to="/cart" className="relative">
@@ -143,7 +149,7 @@ const Navbar = () => {
                   className="text-white block py-2 px-3 rounded-md hover:bg-blue-700"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Wishlist
+                  Wishlist ({wishlistCount})
                 </Link>
                 <button
                   onClick={() => {

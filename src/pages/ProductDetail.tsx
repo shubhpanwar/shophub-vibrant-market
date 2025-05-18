@@ -1,17 +1,17 @@
-
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ChevronLeft, Star, Heart, ShoppingCart, TruckIcon, ShieldCheck, RefreshCw, IndianRupee } from 'lucide-react';
 import { products } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import ProductCard from '@/components/ProductCard';
-import { useCart } from '@/lib/context';
+import { useCart, useWishlist } from '@/lib/context';
 import { toast } from 'sonner';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   
   const product = products.find(p => p.id === Number(id));
   
@@ -39,6 +39,18 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     addToCart(product, quantity);
     toast(`${product.name} added to cart`);
+  };
+  
+  const inWishlist = isInWishlist(product.id);
+  
+  const toggleWishlist = () => {
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+      toast(`${product.name} removed from wishlist`);
+    } else {
+      addToWishlist(product);
+      toast(`${product.name} added to wishlist`);
+    }
   };
   
   return (
@@ -81,8 +93,13 @@ const ProductDetail = () => {
               </div>
             )}
             
-            <button className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md text-gray-600 hover:text-red-500 transition-colors">
-              <Heart className="h-5 w-5" />
+            <button 
+              className={`absolute top-4 right-4 bg-white p-2 rounded-full shadow-md transition-colors ${
+                inWishlist ? "text-red-500" : "text-gray-600 hover:text-red-500"
+              }`}
+              onClick={toggleWishlist}
+            >
+              <Heart className={`h-5 w-5 ${inWishlist ? "fill-current" : ""}`} />
             </button>
           </div>
           

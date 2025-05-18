@@ -1,4 +1,3 @@
-
 export interface Product {
   id: number;
   name: string;
@@ -199,6 +198,7 @@ export interface CartItem {
 
 // Local storage keys
 export const STORAGE_KEYS = {
-  CART: 'shophub-cart',
-  USER: 'shophub-user',
+  USER: 'shophub_user',
+  CART: 'shophub_cart',
+  WISHLIST: 'shophub_wishlist',
 };

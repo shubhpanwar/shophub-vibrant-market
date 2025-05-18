@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { Star, ShoppingCart, Heart } from 'lucide-react';
 import { Product } from '@/lib/data';
-import { useCart } from '@/lib/context';
+import { useCart, useWishlist } from '@/lib/context';
 import { Button } from '@/components/ui/button';
 
 interface ProductCardProps {
@@ -11,9 +11,20 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const discountedPrice = product.discount 
     ? Math.round(product.price * (1 - product.discount / 100)) 
     : product.price;
+    
+  const inWishlist = isInWishlist(product.id);
+  
+  const toggleWishlist = () => {
+    if (inWishlist) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
 
   return (
     <div className="product-card overflow-hidden group">
@@ -32,8 +43,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         )}
         
-        <button className="absolute top-2 right-2 bg-white p-1.5 rounded-full text-gray-600 hover:text-red-500 transition-colors">
-          <Heart className="h-4 w-4" />
+        <button 
+          className={`absolute top-2 right-2 bg-white p-1.5 rounded-full transition-colors ${
+            inWishlist ? "text-red-500" : "text-gray-600 hover:text-red-500"
+          }`}
+          onClick={toggleWishlist}
+        >
+          <Heart className={`h-4 w-4 ${inWishlist ? "fill-current" : ""}`} />
         </button>
       </div>
       

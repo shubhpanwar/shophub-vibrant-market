@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, users, CartItem, Product, STORAGE_KEYS } from './data';
 import { useToast } from '@/components/ui/use-toast';
@@ -21,6 +20,14 @@ interface CartContextType {
   cartCount: number;
 }
 
+interface WishlistContextType {
+  wishlist: Product[];
+  addToWishlist: (product: Product) => void;
+  removeFromWishlist: (productId: number) => void;
+  isInWishlist: (productId: number) => boolean;
+  wishlistCount: number;
+}
+
 const AuthContext = createContext<AuthContextType>({
   currentUser: null,
   isLoggedIn: false,
@@ -39,12 +46,22 @@ const CartContext = createContext<CartContextType>({
   cartCount: 0,
 });
 
+const WishlistContext = createContext<WishlistContextType>({
+  wishlist: [],
+  addToWishlist: () => {},
+  removeFromWishlist: () => {},
+  isInWishlist: () => false,
+  wishlistCount: 0,
+});
+
 export const useAuth = () => useContext(AuthContext);
 export const useCart = () => useContext(CartContext);
+export const useWishlist = () => useContext(WishlistContext);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [wishlist, setWishlist] = useState<Product[]>([]);
   const { toast } = useToast();
 
   // Load user from localStorage on mount
@@ -58,12 +75,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (storedCart) {
       setCart(JSON.parse(storedCart));
     }
+    
+    const storedWishlist = localStorage.getItem(STORAGE_KEYS.WISHLIST);
+    if (storedWishlist) {
+      setWishlist(JSON.parse(storedWishlist));
+    }
   }, []);
 
   // Update localStorage when cart changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
   }, [cart]);
+  
+  // Update localStorage when wishlist changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.WISHLIST, JSON.stringify(wishlist));
+  }, [wishlist]);
 
   // Authentication functions
   const login = async (email: string, password: string) => {
@@ -185,6 +212,38 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
+  // Wishlist functions
+  const addToWishlist = (product: Product) => {
+    setWishlist(prevWishlist => {
+      // Check if product is already in wishlist
+      if (prevWishlist.some(item => item.id === product.id)) {
+        return prevWishlist;
+      }
+      
+      toast({
+        title: "Added to Wishlist",
+        description: `${product.name} added to your wishlist`,
+      });
+      
+      return [...prevWishlist, product];
+    });
+  };
+
+  const removeFromWishlist = (productId: number) => {
+    setWishlist(prevWishlist => 
+      prevWishlist.filter(item => item.id !== productId)
+    );
+    
+    toast({
+      title: "Removed from Wishlist",
+      description: "Item removed from your wishlist",
+    });
+  };
+
+  const isInWishlist = (productId: number) => {
+    return wishlist.some(item => item.id === productId);
+  };
+
   // Calculate cart totals
   const cartTotal = cart.reduce((total, item) => {
     const price = item.product.discount 
@@ -194,6 +253,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   }, 0);
 
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
+  
+  const wishlistCount = wishlist.length;
 
   // Auth context value
   const authValue: AuthContextType = {
@@ -214,11 +275,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     cartTotal,
     cartCount,
   };
+  
+  // Wishlist context value
+  const wishlistValue: WishlistContextType = {
+    wishlist,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    wishlistCount,
+  };
 
   return (
     <AuthContext.Provider value={authValue}>
       <CartContext.Provider value={cartValue}>
-        {children}
+        <WishlistContext.Provider value={wishlistValue}>
+          {children}
+        </WishlistContext.Provider>
       </CartContext.Provider>
     </AuthContext.Provider>
   );
