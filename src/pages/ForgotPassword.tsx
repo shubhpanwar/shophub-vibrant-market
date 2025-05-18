@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft } from 'lucide-react';
+import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import { ShoppingCart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,19 +22,13 @@ const ForgotPassword = () => {
 
     try {
       const success = await requestPasswordReset(email);
-      if (success) {
-        setIsSubmitted(true);
-        toast({
-          title: "Email Sent",
-          description: "If an account exists with this email, you will receive a password reset link.",
-        });
-      } else {
-        toast({
-          title: "Something went wrong",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
-      }
+      setIsSubmitted(true);
+      
+      // Always show success UI regardless of whether email exists (security best practice)
+      toast({
+        title: "Email Sent",
+        description: "If an account exists with this email, you will receive a password reset link.",
+      });
     } catch (error) {
       toast({
         title: "Error",
@@ -44,6 +38,11 @@ const ForgotPassword = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTryAgain = () => {
+    setIsSubmitted(false);
+    setEmail('');
   };
 
   return (
@@ -101,28 +100,31 @@ const ForgotPassword = () => {
             </>
           ) : (
             <div className="text-center">
-              <div className="mb-4 p-3 bg-blue-100 border border-blue-300 text-blue-700 rounded">
-                <p>Password reset email sent</p>
-                <p className="text-sm mt-1">Please check your inbox for further instructions.</p>
+              <div className="flex justify-center mb-6">
+                <CheckCircle className="h-16 w-16 text-green-500" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">Reset Link Sent</h3>
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded">
+                <p className="font-medium">Email sent to: {email}</p>
+                <p className="text-sm mt-1">Please check your inbox for the password reset link.</p>
               </div>
               <p className="my-4 text-gray-600">
-                Didn't receive an email? Check your spam folder or request another reset link.
+                Didn't receive an email? Check your spam folder or try again with a different email.
               </p>
-              <Button
-                onClick={() => setIsSubmitted(false)}
-                variant="outline"
-                className="mt-2"
-              >
-                Try Again
-              </Button>
-              <div className="mt-6">
-                <Link
-                  to="/login"
-                  className="inline-flex items-center text-sm text-brand-blue hover:underline"
+              <div className="flex flex-col sm:flex-row justify-center gap-3 mt-4">
+                <Button
+                  onClick={handleTryAgain}
+                  variant="outline"
+                  className="mt-2"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-1" />
-                  Back to Login
-                </Link>
+                  Try Again
+                </Button>
+                <Button
+                  asChild
+                  className="mt-2 bg-brand-blue hover:bg-blue-700"
+                >
+                  <Link to="/login">Back to Login</Link>
+                </Button>
               </div>
             </div>
           )}
